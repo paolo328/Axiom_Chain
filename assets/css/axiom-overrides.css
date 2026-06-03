@@ -1,0 +1,493 @@
+/* Axiom Chain LLC — typography, theme, and responsive fixes */
+
+/* ------------------------------------------------------------------ */
+/* Font stack (loaded via Google Fonts link in HTML head)              */
+/* ------------------------------------------------------------------ */
+:root {
+  --axiom-font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --axiom-font-mono: "Spline Sans Mono", ui-monospace, "Cascadia Mono",
+    "Segoe UI Mono", monospace;
+}
+
+html {
+  font-family: var(--axiom-font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  overflow-x: clip;
+  min-height: 100dvh;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+.font-manrope,
+[class*="manrope_"][class*="__className"] {
+  font-family: var(--axiom-font-sans) !important;
+}
+
+.font-accent,
+.section-label,
+[class*="spline_sans_mono_"][class*="__className"] {
+  font-family: var(--axiom-font-mono) !important;
+  font-variant-ligatures: none;
+  letter-spacing: 0.04em;
+}
+
+.section-label {
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+
+/* CTA buttons — Manrope, centered label + arrow */
+a[data-slot="button"],
+button[data-slot="button"] {
+  font-family: var(--axiom-font-sans) !important;
+  font-weight: 600 !important;
+  font-variant-ligatures: normal;
+  letter-spacing: -0.02em !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  text-align: center;
+  white-space: nowrap;
+}
+
+a[data-slot="button"] svg,
+button[data-slot="button"] svg {
+  flex-shrink: 0;
+  width: 1rem !important;
+  height: 1rem !important;
+  margin-left: 0 !important;
+  margin-top: 0;
+  vertical-align: middle;
+}
+
+/* Hero / nav primary CTAs */
+a[data-slot="button"][data-variant="default"],
+a[data-slot="button"][data-variant="outline"] {
+  padding-inline: 1.5rem !important;
+  min-height: 3rem;
+}
+
+@media (max-width: 639px) {
+  header a[data-slot="button"][data-variant="default"] {
+    padding-inline: 1.25rem !important;
+    font-size: 0.9375rem !important;
+  }
+}
+
+/* Headings — fluid scale where Tailwind uses fixed sizes */
+h1,
+h2,
+h3 {
+  font-family: var(--axiom-font-sans);
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+h1 {
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+h2 {
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+}
+
+h3 {
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+p,
+li {
+  overflow-wrap: break-word;
+}
+
+/* Long-form / blog */
+.prose,
+[class*="prose"] {
+  font-family: var(--axiom-font-sans);
+  line-height: 1.65;
+}
+
+.prose p,
+.prose li {
+  font-weight: 500;
+}
+
+/* ------------------------------------------------------------------ */
+/* Theme toggle & logos                                                */
+/* ------------------------------------------------------------------ */
+button.ThemeToggle-module__gv9_OW__toggle {
+  opacity: 1 !important;
+  cursor: pointer;
+}
+
+button.ThemeToggle-module__gv9_OW__toggle:hover {
+  opacity: 0.85 !important;
+}
+
+.axiom-site-logo-light {
+  display: none;
+}
+
+html.dark .axiom-site-logo-dark {
+  display: none;
+}
+
+html.dark .axiom-site-logo-light {
+  display: block;
+}
+
+/* Footer is always on dark surface — use light lockup */
+footer .axiom-site-logo-dark {
+  display: none !important;
+}
+
+footer .axiom-site-logo-light {
+  display: block !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Services mega-menu (static nav)                                     */
+/* ------------------------------------------------------------------ */
+.axiom-services-dropdown {
+  position: static;
+}
+
+.axiom-services-dropdown [data-axiom-services-trigger] {
+  cursor: pointer;
+  user-select: none;
+}
+
+.axiom-services-dropdown.is-open [data-axiom-services-trigger] {
+  color: var(--theme-accent);
+}
+
+.axiom-services-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 60;
+  background: var(--background);
+  border-bottom: 1px solid var(--foreground-10);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+  padding: 2rem 0 2.5rem;
+}
+
+.axiom-services-panel__inner {
+  padding-inline: max(1.5rem, env(safe-area-inset-left, 0px))
+    max(1.5rem, env(safe-area-inset-right, 0px));
+}
+
+@media (min-width: 768px) {
+  .axiom-services-panel__inner {
+    padding-inline: calc(var(--spacing, 0.25rem) * 10);
+  }
+}
+
+.axiom-services-panel__grid {
+  display: grid;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .axiom-services-panel__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+}
+
+.axiom-services-panel__col--blockchain {
+  padding-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .axiom-services-panel__col--blockchain {
+    padding-right: 3rem;
+    border-right: 1px solid var(--foreground-10);
+  }
+
+  .axiom-services-panel__col--ai {
+    padding-left: 3rem;
+  }
+}
+
+.axiom-services-panel__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.75rem;
+  color: var(--foreground);
+}
+
+.axiom-services-panel__desc {
+  font-size: 0.875rem;
+  line-height: 1.65;
+  font-weight: 600;
+  color: var(--foreground-50);
+  margin: 0 0 1.5rem;
+  max-width: 26rem;
+}
+
+.axiom-services-panel__list {
+  list-style: none;
+  margin: 0 0 1.75rem;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .axiom-services-panel__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem 2rem;
+  }
+}
+
+.axiom-services-panel__list a {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.4rem 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--foreground);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.axiom-services-panel__list a:hover {
+  color: var(--theme-accent-muted);
+}
+
+.axiom-services-panel__num {
+  font-family: var(--axiom-font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--foreground-50);
+  min-width: 1.35rem;
+  flex-shrink: 0;
+}
+
+.axiom-services-panel__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--axiom-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.axiom-services-panel__cta:hover {
+  opacity: 0.85;
+}
+
+.axiom-services-panel__cta--green {
+  color: #00ef9f;
+}
+
+.axiom-services-panel__cta--accent {
+  color: var(--theme-accent);
+}
+
+@media (max-width: 767px) {
+  .axiom-services-panel {
+    display: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Hero isometric grid (static home hero visual)                       */
+/* ------------------------------------------------------------------ */
+.axiom-hero-grid {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--background);
+  overflow: hidden;
+}
+
+.axiom-hero-grid__stage {
+  position: absolute;
+  inset: 0;
+}
+
+.axiom-hero-grid__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.axiom-hero-grid__fade {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    linear-gradient(
+      to bottom,
+      var(--background) 0%,
+      transparent 15%,
+      transparent 85%,
+      var(--background) 100%
+    ),
+    radial-gradient(circle at 50% 50%, transparent 35%, var(--background) 100%);
+}
+
+@media (max-width: 767px) {
+  .axiom-hero-grid {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Trusted By marquee                                                  */
+/* ------------------------------------------------------------------ */
+@keyframes marquee-loop {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(var(--marquee-shift, -50%), 0, 0);
+  }
+}
+
+@keyframes marquee-loop-reverse {
+  from {
+    transform: translate3d(var(--marquee-shift, -50%), 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.trusted-partners {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.trusted-partners [class*="group/marquee"] > .flex.w-max {
+  will-change: transform;
+}
+
+.trusted-partners img {
+  color: #52525b;
+  max-height: 1.75rem;
+  width: auto;
+  object-fit: contain;
+}
+
+html.dark .trusted-partners img {
+  filter: brightness(1.2);
+}
+
+/* ------------------------------------------------------------------ */
+/* Layout & responsive typography                                      */
+/* ------------------------------------------------------------------ */
+.container-page {
+  width: 100%;
+  margin-inline: auto;
+}
+
+img,
+video,
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+pre,
+code {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* Hero / display lines */
+[class*="text-[clamp"] {
+  line-height: 1.12;
+}
+
+@media (max-width: 639px) {
+  html {
+    font-size: 100%;
+  }
+
+  .container-page {
+    padding-inline: max(1rem, env(safe-area-inset-left, 0px))
+      max(1rem, env(safe-area-inset-right, 0px)) !important;
+  }
+
+  h1 {
+    font-size: clamp(1.75rem, 8vw, 2.75rem);
+  }
+
+  .text-6xl,
+  .text-7xl,
+  .text-8xl,
+  .text-5xl {
+    font-size: clamp(1.5rem, 7vw, 2.5rem) !important;
+    line-height: 1.15 !important;
+  }
+
+  .trusted-partners img {
+    max-height: 1.5rem;
+  }
+
+  button.ThemeToggle-module__gv9_OW__toggle {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@media (min-width: 640px) {
+  .trusted-partners img {
+    max-height: 2.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    line-height: 1.65;
+  }
+}
+
+/* Prevent horizontal scroll from wide tables or pre blocks */
+table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+@media (max-width: 767px) {
+  table {
+    font-size: 0.875rem;
+  }
+}

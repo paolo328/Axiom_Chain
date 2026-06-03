@@ -1,0 +1,12 @@
+<svg width="438" height="116" viewBox="0 0 438 116" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(0 8) scale(0.95)">
+    <path d="M35.5 4L58 17.5V44.5L35.5 58L13 44.5V17.5L35.5 4Z" stroke="#FFFFFF" stroke-width="2.5" fill="none"/>
+    <circle cx="35.5" cy="31" r="7" fill="#A78BFA"/>
+    <circle cx="22" cy="42" r="5" fill="#FFFFFF" fill-opacity="0.9"/>
+    <circle cx="49" cy="42" r="5" fill="#FFFFFF" fill-opacity="0.9"/>
+    <circle cx="35.5" cy="14" r="4.5" fill="#FFFFFF" fill-opacity="0.55"/>
+    <path d="M35.5 24V38M28 35L35.5 31M43 35L35.5 31" stroke="#C4B5FD" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <text x="108" y="52" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="42" font-weight="700" letter-spacing="-1" fill="#FFFFFF">Axiom</text>
+  <text x="108" y="88" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="600" letter-spacing="4" fill="#A78BFA">CHAIN</text>
+</svg>

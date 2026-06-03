@@ -1,6 +1,8 @@
 # Axiom Chain LLC — Website
 
-Static site based on a mirrored layout, rebranded and repaired for local hosting as **Axiom Chain LLC** (blockchain & AI engineering).
+Static site for **Axiom Chain LLC** (blockchain & AI engineering).
+
+**Logo paths:** see [LOGO-PATHS.md](LOGO-PATHS.md)
 
 ## Run locally
 
@@ -36,21 +38,42 @@ Open [http://localhost:8080](http://localhost:8080) in your browser.
 
 ## What was fixed (HTTrack mirror)
 
-- Rebranded **Labrys** → **Axiom Chain** / **Axiom Chain LLC**
+- Rebranded legacy mirror content to **Axiom Chain LLC**
 - Removed broken `_data_image` folders (Next.js blur placeholders misparsed as URLs)
 - Fixed `/_next/` and `/_next/image` paths for offline browsing
 - Corrected broken JavaScript chunk filenames (`~` → `_`)
 - Removed HTTrack mirror comments
 
-## Re-running fixes
+## Branding & dark mode
+
+- **Logo:** Axiom Chain mark and lockup SVGs in `brand/logo/` and `_next/logo_*.svg`
+- **Dark mode:** Moon icon in the nav toggles light/dark theme (saved in `localStorage` as `axiom-theme`)
+
+Re-apply logos and theme after HTML changes:
+
+```bash
+node scripts/apply-axiom-branding.js
+```
+
+## Typography
+
+Body text uses **Manrope**; labels and accents use **Spline Sans Mono** (same pairing as the original site). The HTTrack mirror only kept one local `.woff2` file, so fonts load from **Google Fonts** on all pages. Responsive rules live in `assets/css/axiom-overrides.css`.
+
+After adding new HTML pages:
+
+```bash
+node scripts/inject-typography.js
+```
+
+## Re-running mirror fixes
 
 If you add HTML from a new mirror pass:
 
 ```bash
 node scripts/fix-axiom-site.js
+node scripts/fix-double-next.js
+node scripts/apply-axiom-branding.js
 ```
-
-Note: the script expects files under `labrys.io/`; adjust `SITE_ROOT` in the script if your layout changes.
 
 ## Limitations
 
