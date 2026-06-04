@@ -78,4 +78,15 @@ node scripts/apply-axiom-branding.js
 ## Limitations
 
 - Some team photos and dynamic API routes (`/api/`) were not in the mirror; those assets may be missing offline.
-- This is a static snapshot, not the original Next.js app. Interactivity depends on mirrored JavaScript in `_next/static/chunks/`.
+- This is a static snapshot, not the original Next.js app. Interactivity is restored by `assets/js/axiom-*.js` (theme, nav, marquees, homepage tabs, FAQ accordions).
+
+## Remove bloat
+
+Strip dead Next.js flight payloads, unused chunk JS, and debug files:
+
+```bash
+node scripts/extract-home-data.js   # cache homepage tab data first
+node scripts/cleanup-static-site.js
+```
+
+This runs automatically at the end of `node scripts/apply-axiom-branding.js`.

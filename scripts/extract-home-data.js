@@ -5,22 +5,34 @@ const ROOT = path.join(__dirname, '..');
 const INDEX = path.join(ROOT, 'index.html');
 const CHUNK = path.join(ROOT, '_next/static/chunks/0z483dkqssm4rd07a.js');
 const OUT = path.join(ROOT, 'assets/js/axiom-home-data.js');
+const RSC_CACHE = path.join(ROOT, 'assets/js/.home-rsc-cache.txt');
+
+function decodeRscChunk(raw) {
+  return raw
+    .replace(/\\"/g, '"')
+    .replace(/\\n/g, '\n')
+    .replace(/\\u0026/g, '&')
+    .replace(/\\u0027/g, "'")
+    .replace(/\\"/g, '"');
+}
 
 function readRscPayload(html) {
   const chunks = [];
   const re = /self\.__next_f\.push\(\[1,"([\s\S]*?)"\]\)/g;
   let m;
   while ((m = re.exec(html))) {
-    chunks.push(
-      m[1]
-        .replace(/\\"/g, '"')
-        .replace(/\\n/g, '\n')
-        .replace(/\\u0026/g, '&')
-        .replace(/\\u0027/g, "'")
-        .replace(/\\"/g, '"')
-    );
+    chunks.push(decodeRscChunk(m[1]));
   }
-  return chunks.join('\n');
+  const payload = chunks.join('\n');
+  if (payload) {
+    fs.mkdirSync(path.dirname(RSC_CACHE), { recursive: true });
+    fs.writeFileSync(RSC_CACHE, payload, 'utf8');
+    return payload;
+  }
+  if (fs.existsSync(RSC_CACHE)) {
+    return fs.readFileSync(RSC_CACHE, 'utf8');
+  }
+  return '';
 }
 
 function parseGroupsAt(all, startIdx) {

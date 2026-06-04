@@ -298,4 +298,9 @@ for (const file of walk(ROOT)) {
   count++;
 }
 
+require('child_process').execSync(
+  'node "' + path.join(__dirname, 'cleanup-static-site.js') + '"',
+  { stdio: 'inherit' }
+);
+
 console.log(`Patched ${count} HTML files (${footerCount} with footer logo). Logos copied to _next/.`);
