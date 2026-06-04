@@ -116,6 +116,76 @@ h3 {
   letter-spacing: -0.02em;
 }
 
+/* Insight archive cards — keep medium weight + readable tracking (not heading bold) */
+article.group.relative.flex.flex-col.rounded-2xl h3 {
+  font-weight: 500;
+  letter-spacing: 0.0125em;
+  line-height: 1.3;
+  text-wrap: wrap;
+  word-spacing: 0.03em;
+}
+
+/* Archive grid cards — image must fill the tile (HTTrack strips inline cover styles) */
+article.group.relative.flex.flex-col.overflow-hidden.rounded-2xl.border.border-foreground-10 > img:first-child {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+article.group.relative.flex.flex-col.overflow-hidden.rounded-2xl.border.border-foreground-10 {
+  min-height: 17.5rem;
+}
+
+/* FAQ accordions (static fallback for Radix) */
+[data-slot="accordion-item"] {
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+[data-slot="accordion-item"]:last-child {
+  border-bottom: 0;
+}
+
+[data-slot="accordion-trigger"] {
+  cursor: pointer;
+  width: 100%;
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+}
+
+[data-slot="accordion-trigger"] svg.lucide-chevron-down,
+[data-slot="accordion-trigger"] svg.lucide-chevron-up {
+  transition: transform 0.22s ease, opacity 0.22s ease;
+}
+
+[data-slot="accordion-content"].axiom-accordion-panel {
+  overflow: hidden;
+  height: 0;
+  opacity: 0;
+  transition:
+    height 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.22s ease;
+  will-change: height, opacity;
+}
+
+[data-slot="accordion-content"][data-state="open"] {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="accordion-content"].axiom-accordion-panel,
+  [data-slot="accordion-trigger"] svg.lucide-chevron-down,
+  [data-slot="accordion-trigger"] svg.lucide-chevron-up {
+    transition: none;
+  }
+}
+
+.axiom-accordion-answer {
+  max-width: 52rem;
+}
+
 p,
 li {
   overflow-wrap: break-word;
@@ -143,6 +213,27 @@ button.ThemeToggle-module__gv9_OW__toggle {
 
 button.ThemeToggle-module__gv9_OW__toggle:hover {
   opacity: 0.85 !important;
+}
+
+a[aria-label="Axiom Chain home"] {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.axiom-site-lockup {
+  display: block;
+  height: clamp(1.625rem, 4.2vw, 2.625rem);
+  width: auto;
+  max-width: min(11.5rem, 46vw);
+  min-width: 0;
+}
+
+footer .axiom-site-lockup {
+  height: auto;
+  width: 100%;
+  max-width: min(10.5rem, 72vw);
 }
 
 .axiom-site-logo-light {
@@ -338,12 +429,78 @@ footer .axiom-site-logo-light {
   inset: 0;
 }
 
+.axiom-hero-grid__logos {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.axiom-hero-grid__logo {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.axiom-hero-grid__logo-float {
+  position: relative;
+  z-index: 2;
+  width: 50%;
+  animation: axiom-logo-float 3.2s ease-in-out infinite;
+}
+
+.axiom-hero-grid__logo:nth-child(2) .axiom-hero-grid__logo-float {
+  animation-delay: 0.6s;
+}
+
+.axiom-hero-grid__logo:nth-child(3) .axiom-hero-grid__logo-float {
+  animation-delay: 1.2s;
+}
+
+.axiom-hero-grid__logo-float img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  transform: translateY(calc((-100% / 4) * 0.45));
+}
+
+.axiom-hero-grid__logo-shadow {
+  position: absolute;
+  top: 52%;
+  left: 50%;
+  width: 48%;
+  height: 10%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  filter: blur(5px);
+  z-index: 1;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.55) 0%, transparent 72%);
+}
+
+html:not(.dark) .axiom-hero-grid__logo-shadow {
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.45) 0%, transparent 70%);
+}
+
+@keyframes axiom-logo-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 .axiom-hero-grid__canvas {
   position: absolute;
   inset: 0;
   display: block;
   width: 100%;
   height: 100%;
+  z-index: 0;
 }
 
 .axiom-hero-grid__fade {
@@ -362,9 +519,191 @@ footer .axiom-site-logo-light {
     radial-gradient(circle at 50% 50%, transparent 35%, var(--background) 100%);
 }
 
+.axiom-hero-grid--podiums .axiom-hero-grid__fade {
+  background:
+    linear-gradient(
+      to bottom,
+      var(--background) 0%,
+      transparent 18%,
+      transparent 82%,
+      var(--background) 100%
+    ),
+    radial-gradient(circle at 50% 48%, transparent 48%, var(--background) 100%);
+}
+
+/* Inner-page hero breadcrumbs + label (contact, about, services, etc.) */
+header.relative.min-h-fit nav[aria-label='Breadcrumb'] {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--axiom-font-mono);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.25rem;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+header.relative.min-h-fit nav[aria-label='Breadcrumb'] ol {
+  display: flex;
+  align-items: flex-start;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 0.5rem;
+}
+
+header.relative.min-h-fit nav[aria-label='Breadcrumb'] li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+header.relative.min-h-fit nav[aria-label='Breadcrumb'] a {
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+}
+
+html:not(.dark) header.relative.min-h-fit nav[aria-label='Breadcrumb'] a {
+  color: rgba(13, 14, 22, 0.7);
+}
+
+header.relative.min-h-fit nav[aria-label='Breadcrumb'] span {
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+html:not(.dark) header.relative.min-h-fit nav[aria-label='Breadcrumb'] span {
+  color: rgba(13, 14, 22, 0.5);
+}
+
+header.relative.min-h-fit nav[aria-label='Breadcrumb'] svg {
+  display: block;
+  flex-shrink: 0;
+  width: 0.75rem;
+  height: 0.75rem;
+  transform: translateY(1px);
+  color: rgba(255, 255, 255, 0.5);
+  fill: currentColor;
+}
+
+html:not(.dark) header.relative.min-h-fit nav[aria-label='Breadcrumb'] svg {
+  color: rgba(13, 14, 22, 0.5);
+}
+
+header.relative.min-h-fit .label-caps {
+  display: block;
+  margin: 0;
+  padding: 0;
+  font-family: var(--axiom-font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: 0.25em;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+}
+
+html:not(.dark) header.relative.min-h-fit .label-caps {
+  color: rgba(13, 14, 22, 0.5);
+}
+
+/* Insight article body: keep inline diagrams out of the page header stack */
+article.pt-12,
+article.pt-12 .prose {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+}
+
+article.pt-12 .prose img {
+  position: static !important;
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100%;
+  margin: 1.5rem 0;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+/* Insight hero text backdrop — lighter on article pages (matches axiom-chain) */
+header.relative.min-h-fit [class*='max-w-3xl'] [class*='-inset-y-12'][class*='blur'] {
+  background: color-mix(in srgb, var(--background) 55%, transparent) !important;
+}
+
+html.dark header.relative.min-h-fit [class*='max-w-3xl'] [class*='-inset-y-12'][class*='blur'] {
+  background: color-mix(in srgb, var(--background) 65%, transparent) !important;
+}
+
+@media (min-width: 768px) {
+  header.relative.min-h-fit [class*='max-w-3xl'] [class*='-inset-y-12'][class*='blur'] {
+    background: color-mix(in srgb, var(--background) 35%, transparent) !important;
+  }
+
+  html.dark header.relative.min-h-fit [class*='max-w-3xl'] [class*='-inset-y-12'][class*='blur'] {
+    background: color-mix(in srgb, var(--background) 45%, transparent) !important;
+  }
+}
+
 @media (max-width: 767px) {
-  .axiom-hero-grid {
-    display: none;
+  /* Live site: no fade overlay on mobile grid */
+  .axiom-hero-grid--podiums .axiom-hero-grid__fade {
+    background: transparent;
+  }
+
+  header.relative.min-h-fit {
+    overflow-x: clip;
+  }
+
+  header.relative.min-h-fit [class*='md:left-1/2'][aria-hidden='true'] {
+    min-height: clamp(16rem, 42vw, 18rem);
+    overflow: hidden;
+  }
+
+  header.relative.min-h-fit .container-page,
+  header.relative.min-h-fit .container-page > *,
+  header.relative.min-h-fit .container-page [class*='max-w-3xl'] {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Blur backdrop was extending past the viewport (-inset-x-8) */
+  header.relative.min-h-fit [class*='-inset-x-8'] {
+    left: 0 !important;
+    right: 0 !important;
+  }
+
+  header.relative.min-h-fit nav[aria-label='Breadcrumb'] {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  /* Tighter stack under sticky nav (matches axiom-chain mobile) */
+  header.relative.min-h-fit [class*='max-w-3xl'] {
+    padding-top: 1rem !important;
+    gap: 0.75rem !important;
+  }
+
+  header.relative.min-h-fit h1 {
+    font-size: clamp(1.5rem, 6.5vw, 2rem) !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.03em;
+    text-wrap: wrap;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+  }
+
+  header.relative.min-h-fit p {
+    font-size: 0.9375rem;
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  .axiom-hero-grid--podiums .axiom-hero-grid__fade {
+    display: block;
   }
 }
 
@@ -395,6 +734,10 @@ footer .axiom-site-logo-light {
 }
 
 .trusted-partners [class*="group/marquee"] > .flex.w-max {
+  will-change: transform;
+}
+
+[class*="group/marquee"] > .flex.w-max {
   will-change: transform;
 }
 
@@ -441,12 +784,16 @@ code {
   }
 
   .container-page {
-    padding-inline: max(1rem, env(safe-area-inset-left, 0px))
-      max(1rem, env(safe-area-inset-right, 0px)) !important;
+    padding-inline: max(1.5rem, env(safe-area-inset-left, 0px))
+      max(1.5rem, env(safe-area-inset-right, 0px)) !important;
   }
 
   h1 {
     font-size: clamp(1.75rem, 8vw, 2.75rem);
+  }
+
+  header.relative.min-h-fit p {
+    font-size: 0.9375rem;
   }
 
   .text-6xl,
@@ -476,6 +823,110 @@ code {
 @media (min-width: 1024px) {
   body {
     line-height: 1.65;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Homepage process tabs (static export)                               */
+/* ------------------------------------------------------------------ */
+.axiom-process-tabs {
+  display: grid;
+  grid-template-columns: minmax(140px, 200px) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.axiom-process-tabs__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.axiom-process-tabs__step {
+  border: 2px solid var(--foreground-10, rgba(255, 255, 255, 0.1));
+  border-radius: 1rem;
+  background: transparent;
+  color: var(--foreground-50);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 0.875rem 1rem;
+  text-align: left;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.axiom-process-tabs__step.is-active,
+.axiom-process-tabs__step[aria-selected="true"] {
+  border-color: var(--theme-accent);
+  color: var(--foreground);
+}
+
+.axiom-process-tabs__panel[hidden] {
+  display: none !important;
+}
+
+.axiom-process-tabs__panel.is-active {
+  animation: axiom-panel-in 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.axiom-process-tabs__panel.is-leaving {
+  animation: axiom-panel-out 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Homepage service + project tab panels */
+.axiom-service-panels,
+.axiom-project-panels {
+  position: relative;
+}
+
+.axiom-service-panel,
+.axiom-project-panels > [role="tabpanel"] {
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.axiom-service-panel.is-active,
+.axiom-project-panels > [role="tabpanel"]:not([hidden]) {
+  animation: axiom-panel-in 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.axiom-service-panel.is-leaving,
+.axiom-project-panels > [role="tabpanel"].is-leaving {
+  animation: axiom-panel-out 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes axiom-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes axiom-panel-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+#ready-to-build-section .axiom-hero-grid {
+  opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .axiom-process-tabs__panel.is-active,
+  .axiom-process-tabs__panel.is-leaving,
+  .axiom-service-panel.is-active,
+  .axiom-service-panel.is-leaving {
+    animation: none;
   }
 }
 

@@ -64,6 +64,7 @@ function rm(target) {
 
 // --- Delete junk ---
 rm(path.join(ROOT, 'hts-cache'));
+rm(path.join(ROOT, 'scripts/assets'));
 for (const f of ['hts-log.txt', 'backblue.gif', 'fade.gif']) {
   rm(path.join(ROOT, f));
 }

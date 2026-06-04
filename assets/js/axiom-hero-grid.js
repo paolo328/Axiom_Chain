@@ -35,6 +35,27 @@
   var CUBE_BOUNDS = { colMin: -4, colMax: 4, rowMin: -4, rowMax: 4 };
   var VIEW_DIR = { x: -1, y: -1, z: 1 };
 
+  var PEDESTAL = {
+    dark: {
+      faceTop: '#323334',
+      faceLeft: '#65666b',
+      faceRight: '#4e4e56',
+      stroke: 'rgba(255,255,255,0.1)',
+    },
+    light: {
+      faceTop: '#ffffff',
+      faceLeft: '#e0e0e0',
+      faceRight: '#b3b3b3',
+      stroke: 'rgba(0,0,0,0.2)',
+    },
+  };
+
+  var SNAKE_FREQ = {
+    low: { interval: 3000, max: 4, initialDiv: 1.5 },
+    medium: { interval: 1800, max: 8, initialDiv: 1.5 },
+    high: { interval: 800, max: 12, initialDiv: 1.5 },
+  };
+
   var CUBE_VERTICES = {
     v000: { x: 0, y: 0, z: 0 },
     v100: { x: 1, y: 0, z: 0 },
@@ -150,14 +171,23 @@
     return isDark() ? COLORS.dark : COLORS.light;
   }
 
-  function GridCanvas(container) {
+  function GridCanvas(container, config) {
     this.container = container;
+    this.config = config || {
+      cubes: [],
+      rollingCube: true,
+      animatedSnakes: true,
+      snakeFrequency: 'high',
+    };
     this.canvas = document.createElement('canvas');
     this.canvas.className = 'axiom-hero-grid__canvas';
     container.appendChild(this.canvas);
 
     this.gridCache = null;
     this.snakes = [];
+    this.imageCache = {};
+    this.logoLayer = null;
+    this.logoNodes = [];
     this.cubeState = {
       col: 4,
       row: 4,
@@ -168,28 +198,115 @@
     this.raf = 0;
     this.snakeTimer = 0;
     this.snakeInterval = 800;
+    this.maxSnakes = 12;
     this.lastTs = 0;
     this.running = false;
 
     this.hw = LINE_SPACING / (2 * Math.tan((ANGLE * Math.PI) / 180));
     this.hh = LINE_SPACING / 2;
+    this.lineSpacing = LINE_SPACING;
     this.layout = { ox: 0, oy: 0, w: 0, h: 0 };
 
     var self = this;
     this._resize = function () {
       self.resize();
     };
+
+    if ((this.config.cubes || []).some(function (c) {
+      return c.type === 'img' && c.img;
+    })) {
+      this.setupLogoLayer();
+    }
   }
+
+  GridCanvas.prototype.setupLogoLayer = function () {
+    if (this.logoLayer) return;
+    this.logoLayer = document.createElement('div');
+    this.logoLayer.className = 'axiom-hero-grid__logos';
+    this.container.appendChild(this.logoLayer);
+
+    var self = this;
+    (this.config.cubes || []).forEach(function (cube, index) {
+      if (cube.type !== 'img' || !cube.img) return;
+      var wrap = document.createElement('div');
+      wrap.className = 'axiom-hero-grid__logo';
+      wrap.dataset.cubeIndex = String(index);
+
+      var floater = document.createElement('div');
+      floater.className = 'axiom-hero-grid__logo-float';
+
+      var img = document.createElement('img');
+      img.src = cube.img;
+      img.alt = '';
+      img.decoding = 'async';
+      img.addEventListener('load', function () {
+        self.draw();
+      });
+
+      var shadow = document.createElement('div');
+      shadow.className = 'axiom-hero-grid__logo-shadow';
+
+      floater.appendChild(img);
+      wrap.appendChild(floater);
+      wrap.appendChild(shadow);
+      self.logoLayer.appendChild(wrap);
+      self.logoNodes.push({ cube: cube, wrap: wrap });
+    });
+  };
+
+  GridCanvas.prototype.pedestalHeight = function (cube) {
+    return this.lineSpacing * Math.max(cube.scale, 0.35);
+  };
+
+  GridCanvas.prototype.syncLogos = function () {
+    if (!this.logoLayer || !this.layout.w) return;
+
+    var ls = this.lineSpacing;
+    for (var i = 0; i < this.logoNodes.length; i++) {
+      var entry = this.logoNodes[i];
+      var cube = entry.cube;
+      var wrap = entry.wrap;
+      var screen = this.toScreen(cube.col, cube.row);
+      var pedH = this.pedestalHeight(cube);
+      var boxW = ls * 2.5;
+      var boxH = ls * 3;
+      // Top cap surface (matches drawPedestal geometry).
+      var capTop = screen.cy - pedH - ls;
+
+      wrap.style.width = boxW + 'px';
+      wrap.style.height = boxH + 'px';
+      var left = screen.cx - boxW * 0.5;
+      if (this.layout.w < 768) {
+        left = Math.max(8, Math.min(left, this.layout.w - boxW - 8));
+      }
+      wrap.style.left = left + 'px';
+      // Align shadow band with the pedestal cap.
+      wrap.style.top = capTop - boxH * 0.52 + 'px';
+    }
+  };
 
   GridCanvas.prototype.resize = function () {
     var w = this.container.clientWidth;
     var h = this.container.clientHeight;
     if (!w || !h) return;
 
+    var hasPodiums = (this.config.cubes || []).some(function (c) {
+      return c.type === 'img';
+    });
+    var mobile = w < 768;
+    var spacing = LINE_SPACING;
+    if (hasPodiums && mobile) {
+      spacing = Math.max(42, Math.min(LINE_SPACING, w * 0.14));
+    }
+
+    this.hw = spacing / (2 * Math.tan((ANGLE * Math.PI) / 180));
+    this.hh = spacing / 2;
+    this.lineSpacing = spacing;
+
     this.layout.w = w;
     this.layout.h = h;
-    this.layout.ox = Math.floor(w / 2);
-    this.layout.oy = Math.floor(h / 2);
+    this.layout.ox = Math.floor(w / (hasPodiums && mobile ? 1.55 : 2));
+    this.layout.oy = Math.floor(h / (hasPodiums && mobile ? 1.85 : 2));
 
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     this.canvas.width = w * dpr;
@@ -202,6 +319,7 @@
     ctx.scale(dpr, dpr);
 
     this.gridCache = null;
+    this.syncLogos();
     this.draw();
   };
 
@@ -289,7 +407,7 @@
     var pal = cubePalette();
     var hw = this.hw;
     var hh = this.hh;
-    var h = LINE_SPACING;
+    var h = this.lineSpacing;
     var screen = this.toScreen(this.cubeState.col, this.cubeState.row);
     var roll = this.cubeState.roll;
     var progress = roll ? roll.progress : 0;
@@ -372,6 +490,79 @@
     ctx.restore();
   };
 
+  GridCanvas.prototype.loadImages = function () {
+    var self = this;
+    var cubes = this.config.cubes || [];
+    cubes.forEach(function (cube) {
+      if (!cube.img || self.imageCache[cube.img]) return;
+      var img = new Image();
+      img.decoding = 'async';
+      img.onload = function () {
+        self.draw();
+      };
+      img.src = cube.img;
+      self.imageCache[cube.img] = img;
+    });
+  };
+
+  GridCanvas.prototype.drawPedestal = function (ctx, cube) {
+    var pal = isDark() ? PEDESTAL.dark : PEDESTAL.light;
+    var screen = this.toScreen(cube.col, cube.row);
+    var r = screen.cx;
+    var n = screen.cy;
+    var hw = this.hw;
+    var hh = this.hh;
+    var h = this.pedestalHeight(cube);
+    var k = hh;
+
+    var d = [r, n];
+    var f = [r + hw, n - hh];
+    var g = [r - hw, n - hh];
+    var m = [r, n - h];
+    var b = [r + hw, n - hh - h];
+    var M = [r - hw, n - hh - h];
+    var capTop = n - 2 * k - h;
+
+    function face(points, fill) {
+      ctx.beginPath();
+      ctx.moveTo(points[0][0], points[0][1]);
+      for (var i = 1; i < points.length; i++) ctx.lineTo(points[i][0], points[i][1]);
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.strokeStyle = pal.stroke;
+      ctx.stroke();
+    }
+
+    ctx.save();
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 1;
+    face([[r, capTop], M, m, b], pal.faceTop);
+    face([g, d, m, M], pal.faceLeft);
+    face([d, f, b, m], pal.faceRight);
+
+    // Soft under-glow on cap (matches live site).
+    var glow = ctx.createRadialGradient(r, capTop + hh * 0.35, 0, r, capTop + hh * 0.35, hw * 0.95);
+    glow.addColorStop(0, isDark() ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.12)');
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.moveTo(r, capTop);
+    ctx.lineTo(M[0], M[1]);
+    ctx.lineTo(m[0], m[1]);
+    ctx.lineTo(b[0], b[1]);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  };
+
+  GridCanvas.prototype.drawPedestals = function (ctx) {
+    var cubes = this.config.cubes || [];
+    for (var i = 0; i < cubes.length; i++) {
+      if (cubes[i].type === 'img') this.drawPedestal(ctx, cubes[i]);
+    }
+  };
+
   GridCanvas.prototype.spawnSnake = function () {
     var active = 0;
     var slot = -1;
@@ -379,7 +570,7 @@
       if (this.snakes[i].active) active++;
       else if (slot === -1) slot = i;
     }
-    if (active >= 12 || slot === -1) return;
+    if (active >= this.maxSnakes || slot === -1) return;
 
     var snake = this.snakes[slot];
     var c = Math.floor((Math.random() - 0.5) * 60);
@@ -479,7 +670,11 @@
     ctx.drawImage(this.gridCache, 0, 0, this.layout.w, this.layout.h);
 
     this.drawSnakes(ctx);
-    this.drawCube(ctx);
+    this.drawPedestals(ctx);
+    this.syncLogos();
+    if (this.config.rollingCube !== false) {
+      this.drawCube(ctx);
+    }
   };
 
   GridCanvas.prototype.tick = function (ts) {
@@ -508,6 +703,10 @@
       return;
     }
 
+    var freq = SNAKE_FREQ[this.config.snakeFrequency] || SNAKE_FREQ.high;
+    this.snakeInterval = freq.interval;
+    this.maxSnakes = freq.max;
+
     this.snakes = [];
     for (var i = 0; i < MAX_SNAKES; i++) {
       this.snakes.push({
@@ -522,9 +721,12 @@
     }
 
     var self = this;
-    var initial = Math.floor(12 / 1.5);
-    for (var j = 0; j < initial; j++) this.spawnSnake();
+    var initial = Math.floor(freq.max / freq.initialDiv);
+    if (this.config.animatedSnakes !== false) {
+      for (var j = 0; j < initial; j++) this.spawnSnake();
+    }
 
+    this.loadImages();
     this.running = true;
     this.lastTs = 0;
     this.cubeState = {
@@ -534,10 +736,13 @@
       roll: null,
       pauseRemaining: 0.5,
     };
-    this.snakeTimer = window.setInterval(function () {
-      if (document.hidden) return;
-      self.spawnSnake();
-    }, this.snakeInterval);
+
+    if (this.config.animatedSnakes !== false) {
+      this.snakeTimer = window.setInterval(function () {
+        if (document.hidden) return;
+        self.spawnSnake();
+      }, this.snakeInterval);
+    }
 
     this._tick = function (ts) {
       self.tick(ts);
@@ -556,35 +761,115 @@
     this.draw();
   };
 
-  function buildMarkup() {
+  function buildMarkup(podiums) {
+    var cls = 'axiom-hero-grid' + (podiums ? ' axiom-hero-grid--podiums' : '');
     return (
-      '<div class="axiom-hero-grid">' +
+      '<div class="' + cls + '">' +
       '<div class="axiom-hero-grid__fade" aria-hidden="true"></div>' +
       '<div class="axiom-hero-grid__stage"></div>' +
       '</div>'
     );
   }
 
-  function findHeroHost() {
-    var headers = document.querySelectorAll('header');
-    for (var i = 0; i < headers.length; i++) {
-      if (!headers[i].className.includes('100dvh')) continue;
-      var candidate = headers[i].querySelector('[class*="md:left-1/2"]');
-      if (candidate) return candidate;
+  function extractGridDataObject(text, idx) {
+    var tail = text.slice(idx);
+    var brace = tail.indexOf('{');
+    if (brace < 0 || brace > 15) return null;
+
+    var depth = 0;
+    var buf = '';
+    for (var j = brace; j < tail.length; j++) {
+      var ch = tail.charAt(j);
+      if (ch === '{') depth++;
+      if (depth > 0) buf += ch;
+      if (ch === '}') {
+        depth--;
+        if (depth === 0) break;
+      }
     }
-    return null;
+
+    var unescaped = buf.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+    try {
+      return JSON.parse(unescaped);
+    } catch (e) {
+      return null;
+    }
   }
 
-  function init() {
-    if (!window.matchMedia('(min-width: 768px)').matches) return;
+  function parsePageGridConfig() {
+    var text = document.documentElement.innerHTML;
+    var configs = [];
+    var pos = 0;
 
-    var host = findHeroHost();
-    if (!host || host.dataset.axiomHeroGridBound) return;
+    while ((pos = text.indexOf('gridData', pos)) >= 0) {
+      var parsed = extractGridDataObject(text, pos);
+      if (parsed) configs.push(parsed);
+      pos++;
+    }
+
+    for (var i = 0; i < configs.length; i++) {
+      var imgCubes = (configs[i].cubes || []).filter(function (c) {
+        return c.type === 'img' && c.img;
+      });
+      if (imgCubes.length) {
+        return {
+          cubes: imgCubes,
+          rollingCube: false,
+          animatedSnakes: configs[i].animatedSnakes !== false,
+          snakeFrequency: configs[i].snakeFrequency || 'medium',
+        };
+      }
+    }
+
+    return {
+      cubes: [],
+      rollingCube: true,
+      animatedSnakes: true,
+      snakeFrequency: 'high',
+    };
+  }
+
+  function pagePathPrefix() {
+    var depth = (location.pathname.match(/\//g) || []).length - 1;
+    if (depth <= 0 || location.pathname.endsWith('.html')) {
+      var parts = location.pathname.split('/').filter(Boolean);
+      if (parts.length <= 1) return '';
+      return '../'.repeat(parts.length - 1);
+    }
+    return '../'.repeat(depth);
+  }
+
+  function normalizeGridConfig(config) {
+    var prefix = pagePathPrefix();
+    config.cubes = (config.cubes || []).map(function (cube) {
+      var copy = Object.assign({}, cube);
+      if (copy.img && !/^(https?:|\/)/.test(copy.img)) {
+        copy.img = prefix + copy.img;
+      }
+      return copy;
+    });
+    return config;
+  }
+
+  function findGridHost() {
+    var candidate = document.querySelector('header [class*="md:left-1/2"][aria-hidden="true"]');
+    if (!candidate || candidate.dataset.axiomHeroGridBound) return null;
+    return candidate;
+  }
+
+  function findCtaGridHost() {
+    var section = document.getElementById('ready-to-build-section');
+    if (!section) return null;
+    var host = section.querySelector('.pointer-events-none.absolute.inset-0[aria-hidden="true"]');
+    if (!host || host.dataset.axiomHeroGridBound) return null;
+    return host;
+  }
+
+  function mountGrid(host, config) {
     host.dataset.axiomHeroGridBound = '1';
-
-    host.innerHTML = buildMarkup();
+    host.innerHTML = buildMarkup((config.cubes || []).length > 0);
     var stage = host.querySelector('.axiom-hero-grid__stage');
-    var grid = new GridCanvas(stage);
+    var grid = new GridCanvas(stage, config);
 
     var ro = new ResizeObserver(function () {
       grid.resize();
@@ -607,6 +892,26 @@
         grid.resize();
       }
     });
+  }
+
+  function init() {
+    var heroHost = findGridHost();
+    if (heroHost) {
+      mountGrid(heroHost, normalizeGridConfig(parsePageGridConfig()));
+    }
+
+    var ctaHost = findCtaGridHost();
+    if (ctaHost) {
+      mountGrid(
+        ctaHost,
+        normalizeGridConfig({
+          cubes: [],
+          rollingCube: true,
+          animatedSnakes: true,
+          snakeFrequency: 'medium',
+        })
+      );
+    }
   }
 
   if (document.readyState === 'loading') {

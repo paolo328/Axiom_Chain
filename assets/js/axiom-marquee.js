@@ -75,8 +75,12 @@
   }
 
   function init() {
-    document.querySelectorAll('.trusted-partners [class*="group/marquee"]').forEach(function (el, idx) {
-      initMarquee(el, idx % 2 === 1 ? 'right' : 'left');
+    document.querySelectorAll('[class*="group/marquee"]').forEach(function (el, idx) {
+      if (el.closest('.trusted-partners')) {
+        initMarquee(el, idx % 2 === 1 ? 'right' : 'left');
+        return;
+      }
+      initMarquee(el, idx % 2 === 0 ? 'left' : 'right');
     });
   }
 

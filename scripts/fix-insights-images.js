@@ -8,28 +8,24 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const INSIGHTS_HTML = path.join(ROOT, 'insights.html');
 
+function isBannerPath(rel) {
+  return /banner|v2-banner|-banner\./i.test(path.basename(rel));
+}
+
 function resolveImage(slug) {
   const tryPaths = [
     `images/blog/${slug}-card.webp`,
     `images/blog/${slug}-card-v2.webp`,
     `images/blog/${slug}-card-v3.webp`,
-    `images/blog/${slug}-banner.webp`,
-    `images/blog/${slug}-banner-v2.webp`,
-    `images/blog/${slug}-banner-v3.webp`,
-    `images/blog/${slug}.webp`,
   ];
 
   const genDir = path.join(ROOT, 'images/blog/generated');
   if (fs.existsSync(genDir)) {
     for (const f of fs.readdirSync(genDir)) {
-      if (f.includes(slug) && (f.includes('card') || f.includes('banner'))) {
+      if (f.includes(slug) && f.includes('card')) {
         tryPaths.push(`images/blog/generated/${f}`);
       }
     }
-  }
-
-  for (const rel of tryPaths) {
-    if (fs.existsSync(path.join(ROOT, rel))) return rel;
   }
 
   const nextDir = path.join(ROOT, '_next');
@@ -38,22 +34,67 @@ function resolveImage(slug) {
       (f) => f.startsWith(slug) && /\.(jpg|jpeg|webp|png)$/i.test(f)
     );
     const card = files.find((f) => /card/i.test(f));
-    if (card) return `_next/${card}`;
-    if (files.length) return `_next/${files[0]}`;
+    if (card) tryPaths.push(`_next/${card}`);
+  }
+
+  tryPaths.push(`images/blog/${slug}.webp`);
+
+  // Banners are last — they crop badly on archive cards (1920×480 in a portrait tile).
+  tryPaths.push(
+    `images/blog/${slug}-banner.webp`,
+    `images/blog/${slug}-banner-v2.webp`,
+    `images/blog/${slug}-banner-v3.webp`
+  );
+
+  if (fs.existsSync(genDir)) {
+    for (const f of fs.readdirSync(genDir)) {
+      if (f.includes(slug) && f.includes('banner')) {
+        tryPaths.push(`images/blog/generated/${f}`);
+      }
+    }
+  }
+
+  if (fs.existsSync(nextDir)) {
+    const files = fs.readdirSync(nextDir).filter(
+      (f) =>
+        f.startsWith(slug) &&
+        /\.(jpg|jpeg|webp|png)$/i.test(f) &&
+        !/card/i.test(f)
+    );
+    if (files.length) tryPaths.push(`_next/${files[0]}`);
+  }
+
+  for (const rel of tryPaths) {
+    if (fs.existsSync(path.join(ROOT, rel))) return rel;
   }
 
   return null;
 }
 
-function cleanImgTag(imgHtml, src) {
+function cleanImgTag(imgHtml, src, mode = 'card') {
   const altMatch = imgHtml.match(/alt="([^"]*)"/);
   const alt = altMatch ? altMatch[1] : '';
+  if (mode === 'prose') {
+    return `<img alt="${alt}" loading="lazy" decoding="async" src="${src}"/>`;
+  }
   return (
     `<img alt="${alt}" loading="lazy" decoding="async" ` +
     `class="object-cover object-center transition-transform duration-500 group-hover:scale-105" ` +
     `style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;object-fit:cover" ` +
     `src="${src}"/>`
   );
+}
+
+function cleanCardExcerpt(text) {
+  return text
+    .replace(/\sIntro\s+/g, '. ')
+    .replace(
+      /from the Axiom Chain team\.+\s*The team at Axiom Chain/gi,
+      'from our team. We'
+    )
+    .replace(/\.{2,}/g, '.')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function fixInsightsPage(html) {
@@ -66,12 +107,33 @@ function fixInsightsPage(html) {
     if (!src) return block;
 
     const imgRe = /<img[^>]*>/;
-    if (!imgRe.test(block)) return block;
-    if (!/background-image:none|_next\/image\?url=/.test(block) && block.includes(`src="${src}"`)) {
-      return block;
+    const imgMatch = block.match(imgRe);
+    if (!imgMatch) return block;
+
+    const currentImg = imgMatch[0];
+    const currentSrc = currentImg.match(/\ssrc="([^"]+)"/)?.[1];
+    const needsCover = !/object-cover|object-fit:cover/.test(currentImg);
+    const needsSrc =
+      currentSrc !== src ||
+      (currentSrc && isBannerPath(currentSrc) && !isBannerPath(src));
+
+    let newBlock = block;
+    if (
+      needsCover ||
+      needsSrc ||
+      /background-image:none|_next\/image\?url=/.test(block)
+    ) {
+      newBlock = newBlock.replace(imgRe, (img) => cleanImgTag(img, src));
     }
 
-    const newBlock = block.replace(imgRe, (img) => cleanImgTag(img, src));
+    newBlock = newBlock.replace(
+      /(<p class="[^"]*line-clamp-2[^"]*">)([^<]+)(<\/p>)/,
+      (full, open, text, close) => {
+        const cleaned = cleanCardExcerpt(text);
+        return cleaned === text ? full : `${open}${cleaned}${close}`;
+      }
+    );
+
     if (newBlock !== block) fixed++;
     return newBlock;
   });
@@ -96,7 +158,6 @@ function fixInsightsPage(html) {
 }
 
 const TEXT_FIXES = [
-  [/>\s*Labrys\s*</g, '>Axiom Chain<'],
   [/Building with Labrys/gi, 'Building with Axiom Chain'],
   [/from Labrys:/gi, 'from Axiom Chain:'],
   [/Labrys built/gi, 'Axiom Chain built'],
@@ -105,6 +166,24 @@ const TEXT_FIXES = [
   [/Labrys Turns/gi, 'Axiom Chain milestone'],
   [/CEO Lachlan Feeney/gi, 'the Axiom Chain team'],
 ];
+
+const INSIGHT_CARD_TAGS = {
+  'why-we-refreshed-our-brand': 'Culture — Company',
+  'six-years-in': 'Culture — Company',
+};
+
+function fixInsightCardTags(html) {
+  for (const [slug, tag] of Object.entries(INSIGHT_CARD_TAGS)) {
+    html = html.replace(
+      new RegExp(
+        `(href="insights/${slug}\\.html"[\\s\\S]*?<p class="mb-2 text-xs font-bold uppercase tracking-widest text-white/70">)[^<]+(<\\/p>)`,
+        'g'
+      ),
+      `$1${tag}$2`
+    );
+  }
+  return html;
+}
 
 function fixBrokenImgTags(html, pathPrefix = '') {
   const imgRe = /<img([^>]*background-image:none[^>]*)>/gi;
@@ -125,7 +204,7 @@ function fixBrokenImgTags(html, pathPrefix = '') {
     if (!src || !fs.existsSync(path.join(ROOT, src.replace(pathPrefix, '')))) return full;
     const altM = attrs.match(/alt="([^"]*)"/);
     n++;
-    return cleanImgTag(`<img alt="${altM ? altM[1] : ''}">`, pathPrefix + src.replace(pathPrefix, ''));
+    return cleanImgTag(`<img alt="${altM ? altM[1] : ''}">`, pathPrefix + src.replace(pathPrefix, ''), 'prose');
   });
   return { html, n };
 }
@@ -157,6 +236,8 @@ for (const file of walkHtml(ROOT)) {
     html = patched;
     totalCards += fixed;
     changed = fixed > 0;
+    html = fixInsightCardTags(html);
+    changed = true;
   }
 
   const { html: h2, n } = fixBrokenImgTags(html, prefix);
