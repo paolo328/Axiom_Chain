@@ -942,3 +942,267 @@ table {
     font-size: 0.875rem;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Careers pages                                                       */
+/* ------------------------------------------------------------------ */
+.axiom-careers-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.axiom-careers-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+@media (min-width: 640px) {
+  .axiom-careers-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .axiom-careers-layout {
+    gap: 2.5rem;
+  }
+
+  .axiom-careers-grid {
+    gap: 2rem;
+  }
+}
+
+.axiom-career-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--foreground) 3%, transparent);
+  transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+
+@media (min-width: 768px) {
+  .axiom-career-card {
+    padding: 1.75rem;
+  }
+}
+
+.axiom-career-card:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+.axiom-career-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.axiom-career-card__tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--color-accent-green-muted) 80%, transparent);
+  font-family: var(--axiom-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--foreground-70);
+}
+
+.axiom-career-card__title {
+  margin-bottom: 0.75rem;
+  font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+
+.axiom-career-card__desc {
+  flex: 1 1 auto;
+  margin-bottom: 1.5rem;
+  font-size: clamp(0.875rem, 1.5vw, 0.9375rem);
+  font-weight: 500;
+  line-height: 1.65;
+  color: var(--foreground-50);
+}
+
+.axiom-career-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: auto;
+  font-family: var(--axiom-font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+  transition: gap 0.3s;
+}
+
+.axiom-career-card:hover .axiom-career-card__link {
+  gap: 0.75rem;
+}
+
+.axiom-careers-enquiries {
+  width: 100%;
+  padding: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+}
+
+@media (min-width: 768px) {
+  .axiom-careers-enquiries {
+    padding: 1.75rem 2rem;
+  }
+}
+
+.axiom-careers-enquiries p:last-child {
+  margin-bottom: 0;
+  overflow-wrap: anywhere;
+}
+
+header.axiom-job-hero .axiom-job-hero__title {
+  font-size: clamp(1.375rem, 2.6vw, 2.75rem);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+@media (min-width: 640px) {
+  header.axiom-job-hero .axiom-job-hero__title {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 639px) {
+  header.axiom-job-hero .axiom-job-hero__title {
+    font-size: clamp(1.25rem, 6vw, 1.75rem);
+    text-wrap: balance;
+  }
+}
+
+.axiom-job-detail {
+  max-width: 46rem;
+}
+
+.axiom-job-detail__intro {
+  margin-bottom: 2.5rem;
+  font-size: clamp(1rem, 2vw, 1.0625rem);
+  font-weight: 500;
+  line-height: 1.7;
+  color: var(--foreground-50);
+}
+
+.axiom-job-detail__section {
+  margin-bottom: 2.5rem;
+}
+
+.axiom-job-detail__section h2 {
+  margin-bottom: 1rem;
+  font-size: clamp(1.125rem, 2vw, 1.375rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+
+.axiom-job-detail__section ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding-left: 0;
+  list-style: none;
+}
+
+.axiom-job-detail__section li {
+  position: relative;
+  padding-left: 1.25rem;
+  font-size: clamp(0.875rem, 1.5vw, 0.9375rem);
+  font-weight: 500;
+  line-height: 1.65;
+  color: var(--foreground-70);
+}
+
+.axiom-job-detail__section li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.axiom-job-apply {
+  margin-top: 3rem;
+  padding: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+}
+
+@media (min-width: 768px) {
+  .axiom-job-apply {
+    padding: 2rem;
+  }
+}
+
+.axiom-job-apply h2 {
+  margin-bottom: 0.75rem;
+  font-size: clamp(1.125rem, 2vw, 1.25rem);
+  font-weight: 800;
+  color: var(--foreground);
+}
+
+.axiom-job-apply p {
+  margin-bottom: 1.25rem;
+  font-size: clamp(0.875rem, 1.5vw, 0.9375rem);
+  font-weight: 500;
+  line-height: 1.65;
+  color: var(--foreground-50);
+}
+
+.axiom-job-apply a[href^="mailto:"] {
+  font-family: var(--axiom-font-mono);
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.axiom-job-apply a[href^="mailto:"]:hover {
+  color: var(--foreground);
+}
+
+.axiom-job-apply a[data-slot="button"] {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 480px) {
+  .axiom-job-apply a[data-slot="button"] {
+    width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .axiom-career-card {
+    transition: border-color 0.3s;
+  }
+
+  .axiom-career-card:hover {
+    transform: none;
+  }
+}

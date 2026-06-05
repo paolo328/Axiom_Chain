@@ -1,5 +1,7 @@
 # Dev / deploy tooling
 node_modules/**
+.git/**
+.wrangler/**
 package.json
 package-lock.json
 wrangler.jsonc
