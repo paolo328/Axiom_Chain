@@ -1,0 +1,12 @@
+{
+  "name": "axiom-chain",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^4.24.0"
+  }
+}

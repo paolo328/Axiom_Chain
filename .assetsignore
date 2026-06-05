@@ -1,0 +1,15 @@
+# Dev / deploy tooling
+node_modules/**
+package.json
+package-lock.json
+wrangler.jsonc
+.assetsignore
+.gitignore
+
+# Source tooling (not part of the public site)
+scripts/**
+README.md
+LOGO-PATHS.md
+
+# IDE
+.cursor/**
